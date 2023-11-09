@@ -20,7 +20,7 @@ function task:start {
 }
 
 function task:default {
-  start
+  task:start
 }
 
 ####################
