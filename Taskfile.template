@@ -24,6 +24,7 @@ function task:default {
 }
 
 ####################
+# Help Tasks
 
 function task:help {
   : "Prints this help"
@@ -31,7 +32,7 @@ function task:help {
   echo "$0 <task> <args>"
   echo
   echo "Tasks:"
-  for task in $(compgen -A function | sed -nE '/default/d; s/task:(.*)/\1/p')
+  for task in $(getTaskList)
   do
     task:describe $task
   done
@@ -39,22 +40,45 @@ function task:help {
   task:explain default
 }
 
-COLON_COMMENT_PATTERN=" *: *\(['"'"'"]\)\(.*\)\1;"
-function getTask {
-  type "task:$1"
-}
-
 function task:describe {
   : "Prints description of task"
 
-  printf '    %-16s | %s\n' $1 "$(getTask $1 | sed -ne "s/${COLON_COMMENT_PATTERN}/\2/p")"
+  printf '  %-16s \u258F%s\n' $1 "$(getDescription $1)"
 }
 
 function task:explain {
   : "Prints definition of task"
 
-  printf '%s => %s\n' $1 "$(getTask $1 | sed -e "1,2d; /${COLON_COMMENT_PATTERN}/d;")"
+  printf '%s => %s\n' $1 "$(nameWithTaskPrefix $1 | sed -e "1,2d; /${COLON_COMMENT_PATTERN}/d;")"
 }
+
+
+####################
+# Help Helpers
+
+COLON_COMMENT_PATTERN=" *: *\(['"'"'"]\)\(.*\)\1;"
+function nameWithTaskPrefix {
+  type "task:$1"
+}
+
+function getTaskList {
+  compgen -A function | sed -nE '/default/d; s/task:(.*)/\1/p'
+}
+
+function getDescription {
+  nameWithTaskPrefix $1 | sed -ne "s/${COLON_COMMENT_PATTERN}/\2/p"
+}
+
+## For fish shell auto complete
+## Skips the timing
+if [ "$1" = "complete" ]
+then
+  for task in $(getTaskList)
+  do
+    printf '%s\t%s\n' $task "$(getDescription $task)"
+  done
+  exit
+fi
 
 TIMEFORMAT="Task completed in %3lR"
 time "task:${@:-default}"
