@@ -43,7 +43,7 @@ function task:help {
 function task:describe {
   : "Prints description of task"
 
-  printf '  %-16s \u258F%s\n' $1 "$(getDescription $1)"
+  printf '  %-16s ▎%s\n' $1 "$(getDescription $1)"
 }
 
 function task:explain {
